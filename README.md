@@ -1,50 +1,31 @@
-# Welcome to your Expo app 👋
+# Studirest: A Study Management System – Proof of Concept
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This repository contains the architectural artefacts, design documentation, and a proof-of-concept implementation for **Studirest**, a mobile application developed to support Self-Regulated Learning (SRL) for university students.
 
-## Get started
+## Repository Purpose
+The repository is intended to support technical review, design validation, and implementation evidence for the Final Year Project. It demonstrates the integration of behavioral tracking with real-time data persistence.
 
-1. Install dependencies
+## Code Structure
+The folder `app/` contains the core React Native (Expo) implementation, including:
+* **Application Logic:** Functional components and custom hooks for session management.
+* **Route Definitions:** File-based routing handled by Expo Router.
+* **Services:** Firebase integration for Authentication and Firestore database operations.
+* **Constants & Theme:** Global styling configurations and WCAG-compliant color palettes.
 
-   ```bash
-   npm install
-   ```
 
-2. Start the app
+## Technical Stack
+### Frontend
+* **React Native & Expo:** For mobile development.
+* **TypeScript:** For static type checking and robust code architecture.
+### Backend & Infrastructure
+* **Firebase Authentication:** Secure user identity management.
+* **Cloud Firestore:** NoSQL document database for real-time study data synchronization.
+### Version Control & Design
+* **Git/GitHub:** For version control and iterative development tracking.
+* **Figma:** For high-fidelity UI/UX design and prototyping.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Key Features & Specifications
+* **Secure Authentication:** Implementation of Firebase-backed Login and Registration systems.
+* **Pomodoro Engine:** A logic-based timer for tracking study intervals.
+* **Analytical Dashboard:** Visual representation of study habits using data-driven charting libraries.
+* **SRL Integration:** Features designed specifically to promote the 'Plan, Monitor, Reflect' cycle.
