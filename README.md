@@ -1,4 +1,4 @@
-# Studirest: A Study Management System – Proof of Concept
+# Studirest: A Study Management System 
 
 This repository contains the architectural artefacts, design documentation, and a proof-of-concept implementation for **Studirest**, a mobile application developed to support Self-Regulated Learning (SRL) for university students.
 
