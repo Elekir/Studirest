@@ -1,3 +1,6 @@
+import { auth } from "../../config/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -18,6 +21,21 @@ export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Handle Sign Up/Registration Logic with alert 
+  const handleRegister = async () => {
+    if (email === "" || password === "") {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      // Alert.alert("Success", "Account created!"); // Optional
+      router.replace("/_tabs"); 
+    } catch (error: any) {
+      Alert.alert("Registration Failed", error.message);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: Colors.dark.background }]}>
@@ -82,14 +100,14 @@ export default function RegisterScreen() {
             </Text>
             <TouchableOpacity
               style={[styles.arrowButton, { backgroundColor: Colors.dark.primary }]}
-              onPress={() => router.back()}
+              onPress={handleRegister}
             >
               <Ionicons name="arrow-forward" size={24} color={Colors.dark.background} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.footer}>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
               <Text style={{ color: "#BDBDBD" }}>
                 Already have an account?{" "}
                 <Text style={[styles.link, { color: Colors.dark.primary }]}>Login</Text>

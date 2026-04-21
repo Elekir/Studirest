@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -9,10 +11,24 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { auth } from "../../config/firebase";
 import { Colors } from "../../constants/theme";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Function to handle user login
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.replace("/_tabs");
+    } catch (error: any) {
+      Alert.alert("Login Error", "Invalid email or password");
+    }
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: Colors.dark.background }]}
@@ -28,7 +44,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          {/* Username Box */}
+          {/* email Box */}
           <View
             style={[
               styles.inputWrapper,
@@ -36,15 +52,19 @@ export default function LoginScreen() {
             ]}
           >
             <Ionicons
-              name="person-outline"
+              name="mail-outline"
               size={20}
               color="#BDBDBD"
               style={styles.icon}
             />
             <TextInput
-              placeholder="Username"
+              placeholder="Email"
               placeholderTextColor="#BDBDBD"
               style={[styles.input, { color: Colors.dark.text }]}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
             />
           </View>
 
@@ -66,6 +86,8 @@ export default function LoginScreen() {
               placeholderTextColor="#BDBDBD"
               secureTextEntry
               style={[styles.input, { color: Colors.dark.text }]}
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
         </View>
@@ -79,7 +101,7 @@ export default function LoginScreen() {
               styles.arrowButton,
               { backgroundColor: Colors.dark.primary },
             ]}
-            onPress={() => router.push("/register")}
+            onPress={handleLogin}
           >
             <Ionicons
               name="arrow-forward"
@@ -90,20 +112,20 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.footer}>
-         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ color: "#BDBDBD" }}>
-            Dont have an account? {""}
-            <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-              <Text
-                style={[
-                  styles.link,
-                  { color: Colors.dark.primary, fontWeight: "bold" },
-                ]}
-              >
-                Create
-              </Text>
-            </TouchableOpacity>
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ color: "#BDBDBD" }}>
+              Dont have an account? {""}
+              <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
+                <Text
+                  style={[
+                    styles.link,
+                    { color: Colors.dark.primary, fontWeight: "bold" },
+                  ]}
+                >
+                  Create
+                </Text>
+              </TouchableOpacity>
+            </Text>
           </View>
         </View>
       </View>
