@@ -20,7 +20,6 @@ export default function TabLayout() {
           elevation: 0,
           height: 60,
           paddingBottom: 10,
-          
         },
         tabBarInactiveTintColor: "#666", // A lighter gray for inactive icons
       }}
