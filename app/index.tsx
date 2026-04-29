@@ -27,6 +27,6 @@ export default function Index() {
     );
   }
 
-  // If no user exists, send them to Login. If they do, send them to home.
-  return user ? <Redirect href="/_tabs" /> : <Redirect href="/(auth)/register" />;
+  // always redirect to onboarding for the demo
+  return <Redirect href="/onboarding" />;
 }

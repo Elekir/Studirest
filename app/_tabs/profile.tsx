@@ -1,16 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, Switch } from 'react-native';
+import { deleteUser } from "firebase/auth";
+import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from "expo-image";
+import { useTheme } from '../../context/ThemeContext';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router'; 
-import { Colors } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from "../../config/firebase"; 
+import { auth, db } from "../../config/firebase"; 
 import { signOut } from "firebase/auth";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const user = auth.currentUser; // Get the current logged-in user
+  const displayName = user?.email?.split("@")[0] || "Student";
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { isDayMode, toggleTheme, theme } = useTheme();
+
+
+ // Image Picker Function
+  const pickImage = async () => {
+    // Request permission first
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'We need access to your photos to change your profile picture.');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], 
+      allowsEditing: true, // Let them crop it to a square
+      aspect: [1, 1],
+      quality: 0.7, 
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -30,69 +58,146 @@ export default function ProfileScreen() {
     ]);
   };
 
+  // Account delete
+  const handleDeleteAccount = async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  // confirmation first!
+  Alert.alert(
+    "Delete Account",
+    "Are you sure? This will permanently delete all your study data and modules. This cannot be undone.",
+    [
+      { text: "Cancel", style: "cancel" },
+      { 
+        text: "Delete Everything", 
+        style: "destructive", 
+        onPress: async () => {
+          try {
+            // Clean up user's Firestore data (Modules)
+            const q = query(collection(db, "modules"), where("userId", "==", user.uid));
+            const querySnapshot = await getDocs(q);
+            
+            // Delete each module document
+            const deletePromises = querySnapshot.docs.map(document => 
+              deleteDoc(doc(db, "modules", document.id))
+            );
+            await Promise.all(deletePromises);
+
+            // Delete the actual User Auth account
+            await deleteUser(user);
+            
+            // Send them back to onboarding/login
+            router.replace('/onboarding');
+          } catch (error: any) {
+            console.error(error);
+            if (error.code === 'auth/requires-recent-login') {
+              Alert.alert("Security Check", "Please log out and log back in before deleting your account.");
+            } else {
+              Alert.alert("Error", "Something went wrong. Please try again.");
+            }
+          }
+        }
+      }
+    ]
+  );
+};
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: Colors.dark.background }]} edges={["top"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
         
         {/* PROFILE SECTION */}
-        <View style={[styles.ProfileSection, { borderBottomColor: Colors.dark.border }]}>
-          <TouchableOpacity style={styles.imageWrapper}>
-            <View style={[styles.profileImage, styles.profileImagePlaceholder, { backgroundColor: Colors.dark.surface }]}>
-              <Text style={[styles.ProfileImageText, { color: Colors.dark.primary }]}>
-                {user?.email?.[0]?.toUpperCase() || 'U'}
-              </Text>
+        <View style={[styles.ProfileSection, { borderBottomColor: theme.border }]}>
+          <TouchableOpacity style={styles.imageWrapper} onPress={pickImage} activeOpacity={0.8}>
+            <View style={[styles.profileImage, styles.profileImagePlaceholder, { backgroundColor: theme.surface }]}>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.profileImage} />
+              ) : (
+                <Text style={[styles.ProfileImageText, { color: theme.primary }]}>
+                  {displayName[0].toUpperCase()}
+                </Text>
+              )}
             </View>
-            <View style={[styles.editBadge, { backgroundColor: Colors.dark.primary }]}>
+            <View style={[styles.editBadge, { backgroundColor: theme.primary }]}>
               <Ionicons name="camera" size={12} color="white" />
             </View>
           </TouchableOpacity>
 
-          <Text style={[styles.name, { color: Colors.dark.text }]}>
-            {user?.displayName || "Student"}
+          <Text style={[styles.name, { color: theme.text }]}>
+            {displayName}
           </Text>
-          <Text style={[styles.email, { color: Colors.dark.textSecondary }]}>
+          <Text style={[styles.email, { color: theme.textSecondary }]}>
             {user?.email}
           </Text>
         </View>
 
         {/* ACCOUNT SETTINGS */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: Colors.dark.primary }]}>Account</Text>
+          <Text style={[styles.sectionTitle, { color: theme.primary }]}>Account</Text>
 
-          <TouchableOpacity style={[styles.settingItem, { backgroundColor: Colors.dark.surface }]}>
-            <Text style={[styles.settingLabel, { color: Colors.dark.text }]}>Edit Profile</Text>
-            <Ionicons name="chevron-forward" size={18} color={Colors.dark.textSecondary} />
+          <TouchableOpacity style={[styles.settingItem, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.settingLabel, { color: theme.text }]}>Edit Profile</Text>
+            <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.settingItem, { backgroundColor: Colors.dark.surface }]}>
-            <Text style={[styles.settingLabel, { color: Colors.dark.text }]}>Notifications</Text>
-            <Ionicons name="chevron-forward" size={18} color={Colors.dark.textSecondary} />
+          <TouchableOpacity style={[styles.settingItem, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.settingLabel, { color: theme.text }]}>Notifications</Text>
+            <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
           </TouchableOpacity>
         </View>
 
         {/* APP SETTINGS */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: Colors.dark.primary }]}>Preferences</Text>
+  <Text style={[styles.sectionTitle, { color: theme.primary }]}>Preferences</Text>
 
-          <View style={[styles.settingItem, { backgroundColor: Colors.dark.surface }]}>
-            <Text style={[styles.settingLabel, { color: Colors.dark.text }]}>Dark Mode</Text>
-            <Ionicons name="moon" size={18} color={Colors.dark.primary} />
-          </View>
-        </View>
+  <View style={[styles.settingItem, { backgroundColor: theme.surface }]}>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Ionicons 
+        name={isDayMode ? "sunny" : "moon"} 
+        size={18} 
+        color={theme.primary} 
+        style={{ marginRight: 10 }} 
+      />
+      <Text style={[styles.settingLabel, { color: theme.text }]}>Day Mode</Text>
+    </View>
+    
+    <Switch
+      value={isDayMode}
+      onValueChange={toggleTheme} //  flips the switch for the WHOLE app
+      trackColor={{ false: "#767577", true: theme.primary }}
+      thumbColor={isDayMode ? "#fff" : "#f4f3f4"}
+    />
+  </View>
+</View>
 
         {/* SIGN OUT & DELETE ACCOUNT */}
         <View style={styles.section}>
           <TouchableOpacity 
-            style={[styles.settingItem, { backgroundColor: Colors.dark.surface, marginTop: 20 }]} 
+            style={[styles.settingItem, { backgroundColor: theme.surface, marginTop: 20 }]} 
             onPress={handleSignOut}
           >
             <Text style={[styles.settingLabel, { color: '#FF4B4B', fontWeight: 'bold' }]}>Sign Out</Text>
             <Ionicons name="log-out-outline" size={18} color="#FF4B4B" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.settingItem, { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#FF4B4B', marginTop: 10 }]}>
-            <Text style={[styles.settingLabel, { color: '#FF4B4B' }]}>Delete Account</Text>
-          </TouchableOpacity>
+          <TouchableOpacity 
+  onPress={handleDeleteAccount}
+  style={[
+    styles.settingItem, 
+    { 
+      backgroundColor: 'transparent', 
+      borderWidth: 1, 
+      borderColor: '#FF4B4B', 
+      marginTop: 10,
+      justifyContent: 'center' 
+    }
+  ]}
+>
+  <Text style={[styles.settingLabel, { color: '#FF4B4B', textAlign: 'center', width: '100%' }]}>
+    Delete Account
+  </Text>
+</TouchableOpacity>
         </View>
 
       </ScrollView>

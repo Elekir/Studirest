@@ -7,6 +7,7 @@ import {
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+import TimerDisplay from "../../components/timer/TimerDisplay";
 import {
   Dimensions,
   Modal,
@@ -187,27 +188,12 @@ export default function TimerScreen() {
 
         {/* TIMER CIRCLE */}
         <View style={styles.timerContainer}>
-          <Svg style={styles.svg}>
-            <Circle
-              cx={width / 2}
-              cy={140}
-              r={R}
-              stroke="rgba(255,255,255,0.1)"
-              strokeWidth={15}
-            />
-            <Circle
-              cx={width / 2}
-              cy={140}
-              r={R}
-              stroke={Colors.dark.primary}
-              strokeWidth={15}
-              strokeDasharray={CIRCLE_LENGTH}
-              strokeDashoffset={CIRCLE_LENGTH * (1 - seconds / totalTime)}
-              strokeLinecap="round"
-            />
-          </Svg>
-          <TouchableOpacity onPress={() => setIsTimeModalVisible(true)}>
-            <Text style={styles.timerText}>{formatTime(seconds)}</Text>
+          <TouchableOpacity onPress={() => setIsTimeModalVisible(true)} activeOpacity={0.8}>
+            <TimerDisplay 
+               seconds={seconds} 
+               totalTime={totalTime} 
+               formattedTime={formatTime(seconds)} 
+             />
           </TouchableOpacity>
         </View>
 
@@ -506,6 +492,7 @@ const styles = StyleSheet.create({
     height: 300,
     justifyContent: "center",
     alignItems: "center",
+    marginVertical: 20,
   },
   svg: {
     position: "absolute",

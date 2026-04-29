@@ -10,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -30,7 +31,7 @@ export default function RegisterScreen() {
     }
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      // Alert.alert("Success", "Account created!"); // Optional
+       Alert.alert("Success", "Account created!"); 
       router.replace("/_tabs"); 
     } catch (error: any) {
       Alert.alert("Registration Failed", error.message);
@@ -45,6 +46,9 @@ export default function RegisterScreen() {
       >
         <View style={styles.content}>
           <View style={styles.header}>
+            <View style={styles.logoContainer}>
+                        <Image source={require("../../assets/images/logo.png")} style={styles.logo} resizeMode="contain" />
+                      </View>
             <Text style={[styles.titleText, { color: Colors.dark.text }]}>
               Create Account
             </Text>
@@ -157,4 +161,14 @@ const styles = StyleSheet.create({
   },
   footer: { alignItems: "center", marginTop: 50 },
   link: { fontWeight: "bold", textDecorationLine: "underline" },
+
+  logoContainer: {
+  alignItems: 'center',
+  marginTop: 60,      
+  marginBottom: 20,    
+},
+logo: {
+  width: 150,
+  height: 150,
+},
 });

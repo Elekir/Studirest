@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Image,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -35,8 +36,11 @@ export default function LoginScreen() {
     >
       <View style={styles.content}>
         <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Image source={require("../../assets/images/logo.png")} style={styles.logo} resizeMode="contain" />
+          </View>
           <Text style={[styles.helloText, { color: Colors.dark.text }]}>
-            Hello{" "}
+            Studirest{" "}
           </Text>
           <Text style={[styles.subText, { color: "#BDBDBD" }]}>
             Sign in to start locking in
@@ -137,7 +141,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, paddingHorizontal: 30, justifyContent: "center" },
   header: { marginBottom: 50, alignItems: "center" },
-  helloText: { fontSize: 80, fontWeight: "500", letterSpacing: -2 },
+  helloText: { fontSize: 60, fontWeight: "500", letterSpacing: -2 },
   subText: { fontSize: 16, marginTop: -5 },
   inputContainer: { gap: 20 },
   inputWrapper: {
@@ -170,4 +174,14 @@ const styles = StyleSheet.create({
   },
   footer: { alignItems: "center", marginTop: 80 },
   link: { fontWeight: "bold", textDecorationLine: "underline" },
+
+  logoContainer: {
+  alignItems: 'center',
+  marginTop: 60,      
+  marginBottom: 20,    
+},
+logo: {
+  width: 150,
+  height: 150,
+},
 });

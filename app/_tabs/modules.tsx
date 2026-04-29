@@ -10,6 +10,8 @@ import {
   updateDoc
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+import ModuleCard from "../../components/modules/ModuleCard";
+import { useTheme } from "../../context/ThemeContext";
 import {
   FlatList,
   Modal,
@@ -35,11 +37,15 @@ export default function ModulesScreen() {
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editName, setEditName] = useState('');
+  const { theme } = useTheme();
 
   useEffect(() => {
-    const q = query(
-      collection(db, "modules"),
-    );
+    const user = auth.currentUser;
+  if (!user) return;
+  const q = query(
+    collection(db, "modules"),
+    where("userId", "==", user.uid) // Only fetch modules where userId matches the logged-in user
+  );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const firebaseModules = snapshot.docs.map((doc) => ({
@@ -71,7 +77,7 @@ export default function ModulesScreen() {
     }
   };
 
-  // DELETE: Remove from Firebase
+  //  Remove from Firebase
 const deleteModule = async (id: string) => {
   try {
     await deleteDoc(doc(db, "modules", id));
@@ -81,7 +87,7 @@ const deleteModule = async (id: string) => {
   }
 };
 
-// UPDATE: Change the name in Firebase
+// Change the name in Firebase
 const updateModule = async () => {
   if (editingModule && editName.trim().length > 0) {
     try {
@@ -97,11 +103,11 @@ const updateModule = async () => {
 };
 
   return (
-    <View style={[styles.container, { backgroundColor: "#1A1135" }]}>
+    <View style={[styles.container, { backgroundColor:  theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Modules</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Modules</Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Text style={styles.addText}>Add +</Text>
+          <Text style={[styles.addText, { color: theme.primary }]}>Add +</Text>
         </TouchableOpacity>
       </View>
 
@@ -109,50 +115,41 @@ const updateModule = async () => {
   data={modules}
   keyExtractor={(item) => item.id}
   renderItem={({ item }) => (
-    /* THE TRIGGER: It wraps the card */
-    <TouchableOpacity 
-      style={styles.moduleCard} 
+    <ModuleCard 
+      name={item.name} 
+      color={item.color} 
       onPress={() => {
         setEditingModule(item);
         setEditName(item.name);
         setEditModalVisible(true);
-      }}
-    >
-      <View style={[styles.dot, { backgroundColor: item.color }]} />
-      <Text style={styles.moduleName}>{item.name}</Text>
-      <Ionicons
-        name="chevron-forward"
-        size={20}
-        color="#666"
-        style={{ marginLeft: "auto" }}
-      />
-    </TouchableOpacity>
+      }} 
+    />
   )}
 />
       {/* ADD MODULE MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
   <View style={styles.modalOverlay}>
-    <View style={[styles.modalContent, { backgroundColor: Colors.dark.surface }]}>
-      <Text style={[styles.modalTitle, { color: Colors.dark.text }]}>
+    <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+      <Text style={[styles.modalTitle, { color: theme.text }]}>
         New Module
       </Text>
       <TextInput
         style={[
           styles.input, 
-          { color: Colors.dark.text, borderBottomColor: Colors.dark.border }
+          { color: theme.text, borderBottomColor: theme.border }
         ]}
         placeholder="Module Name"
-        placeholderTextColor={Colors.dark.textSecondary}
+        placeholderTextColor={theme.textSecondary}
         value={newModuleName}
         onChangeText={setNewModuleName}
       />
 
       <View style={styles.modalButtons}>
         <TouchableOpacity onPress={() => setModalVisible(false)}>
-          <Text style={{ color: Colors.dark.textSecondary }}>Cancel</Text>
+          <Text style={{ color: theme.textSecondary }}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={addModule}>
-          <Text style={{ color: Colors.dark.primary, fontWeight: "bold" }}>
+          <Text style={{ color: theme.primary, fontWeight: "bold" }}>
             Save
           </Text>
         </TouchableOpacity>
@@ -164,14 +161,14 @@ const updateModule = async () => {
       {/* THE EDIT MODAL */}
       <Modal visible={editModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: Colors.dark.surface }]}>
-            <Text style={[styles.modalTitle, { color: Colors.dark.text }]}>Edit Module</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>Edit Module</Text>
             
             <TextInput 
-              style={[styles.input, { color: Colors.dark.text, borderBottomColor: Colors.dark.border}]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border}]}
               value={editName}
               onChangeText={setEditName}
-              placeholderTextColor={Colors.dark.textSecondary}
+              placeholderTextColor={theme.textSecondary}
             />
 
             <View style={styles.modalButtons}>
@@ -182,10 +179,10 @@ const updateModule = async () => {
               
               <View style={{flexDirection: 'row'}}>
                 <TouchableOpacity onPress={() => setEditModalVisible(false)} style={{marginRight: 20}}>
-                  <Text style={{color: Colors.dark.textSecondary}}>Cancel</Text>
+                  <Text style={{color: theme.textSecondary}}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={updateModule}>
-                  <Text style={{color: Colors.dark.primary, fontWeight: 'bold'}}>Update</Text>
+                  <Text style={{color: theme.primary, fontWeight: 'bold'}}>Update</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -209,16 +206,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 32, fontWeight: "bold", color: "white" },
   addText: { fontSize: 18, color: "#FF71CE", fontWeight: "bold" },
-  moduleCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 10,
-  },
-  dot: { width: 12, height: 12, borderRadius: 6, marginRight: 15 },
-  moduleName: { color: "white", fontSize: 18, fontWeight: "500" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
